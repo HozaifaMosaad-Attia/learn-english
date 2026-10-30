@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Learn English</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><h1 id="logo">Learn English</h1></header>
+<main class="w">
+  <!-- الصفحة الرئيسية: المواضيع -->
+  <div id="home"></div>
+  <!-- داخل الموضوع: المستويات + الأقسام -->
+  <div id="view">
+    <div class="top"><button class="k" id="back">→ المواضيع</button><h2 id="ttl"></h2></div>
+    <nav id="lv"></nav>
+    <div id="tabs"></div>
+    <div id="main"></div>
+  </div>
+</main>
+<!-- قائمة المواضيع (ملفات المحتوى بتتحمّل تلقائياً من فولدر data) -->
+<script src="data/topics.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
