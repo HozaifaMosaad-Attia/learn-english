@@ -125,8 +125,8 @@ textarea {
   border: 0;
   background: #f4a25a;
   color: #1b2a38;
-  min-width: 40px;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
   border-radius: 50%;
   font-size: 17px;
   cursor: pointer;
@@ -241,8 +241,6 @@ textarea {
 
 #view {
   display: none;
-  padding: 40px;
-  margin: 10px auto;
 }
 .top {
   display: flex;
@@ -285,4 +283,165 @@ textarea {
 }
 .tc:hover {
   transform: translateY(-3px);
+}
+
+.k {
+  min-height: 44px;
+}
+.spd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fffaf3;
+  border: 1px solid #f0d9bf;
+  border-radius: 12px;
+  padding: 6px 10px;
+  margin: 10px 0;
+}
+.spd b {
+  min-width: 52px;
+  text-align: center;
+  font-size: 18px;
+  color: #b04e08;
+  direction: ltr;
+}
+.spd .k {
+  min-width: 44px;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 0;
+}
+#stat {
+  font-size: 13px;
+  margin: 4px 0 0;
+  min-height: 18px;
+}
+.tc small {
+  display: block;
+  margin-top: 4px;
+  color: #b04e08;
+  font-size: 12px;
+}
+.pb {
+  display: block;
+  height: 5px;
+  background: #f0d9bf;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 8px 0;
+}
+.pb b {
+  display: block;
+  height: 100%;
+  background: #e8821f;
+}
+
+#htabs {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0;
+}
+#htabs button {
+  flex: 1;
+  padding: 12px 4px;
+  border: 0;
+  border-radius: 10px;
+  background: #f1e3d3;
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 44px;
+}
+#htabs button.on {
+  background: #f4a25a;
+  font-weight: 700;
+}
+#glv {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0;
+}
+#glv button {
+  flex: 1;
+  padding: 10px 0;
+  border: 0;
+  border-radius: 8px;
+  background: #f1e3d3;
+  color: #5a2d06;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+#glv button.on {
+  background: #f4a25a;
+  color: #1b2a38;
+}
+.lc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: right;
+  padding: 14px;
+  margin-bottom: 8px;
+  border: 1px solid #f0d9bf;
+  border-radius: 12px;
+  background: #fffaf3;
+  font-size: 16px;
+  color: #1b2a38;
+  cursor: pointer;
+}
+.lc span {
+  flex: 1;
+  direction: ltr;
+  text-align: left;
+}
+.lc small {
+  color: #2a9d4a;
+}
+.ex {
+  line-height: 1.9;
+  margin: 8px 0;
+}
+h3 {
+  margin: 6px 0;
+  font-size: 20px;
+  direction: ltr;
+  text-align: left;
+}
+.tw {
+  overflow-x: auto;
+  margin: 10px 0;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+td {
+  border: 1px solid #f0d9bf;
+  padding: 8px;
+  font-size: 15px;
+  background: #fff;
+}
+tr:first-child td {
+  background: #f4a25a;
+  font-weight: 700;
+}
+
+.ws {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  direction: ltr;
+  margin: 8px 0;
+}
+.wd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #f0d9bf;
+  border-radius: 24px;
+  padding: 3px 4px 3px 14px;
+  font-size: 17px;
 }

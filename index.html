@@ -9,12 +9,23 @@
 <body>
 <header><h1 id="logo">Learn English</h1></header>
 <main class="w">
-  <!-- الصفحة الرئيسية: المواضيع -->
+  <!-- تبويبات الصفحة الرئيسية: المواضيع | القواعد | الأصوات -->
+  <div id="htabs"></div>
   <div id="home"></div>
+  <!-- القواعد والأصوات (دروس لكل مستوى) -->
+  <div id="learn"></div>
   <!-- داخل الموضوع: المستويات + الأقسام -->
   <div id="view">
     <div class="top"><button class="k" id="back">→ المواضيع</button><h2 id="ttl"></h2></div>
+    <!-- التحكم في سرعة النطق (بيأثر على كل أزرار 🎤 و🐢) -->
+    <div class="spd">
+      <span>🎧 السرعة</span>
+      <button class="k" id="sm" aria-label="أبطأ">−</button>
+      <b id="sv">0.9×</b>
+      <button class="k" id="sp" aria-label="أسرع">+</button>
+    </div>
     <nav id="lv"></nav>
+    <div class="p" id="stat"></div>
     <div id="tabs"></div>
     <div id="main"></div>
   </div>
