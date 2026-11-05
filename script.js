@@ -84,6 +84,45 @@ const na = (s) =>
     .replace(/[؟?.!،,]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+/* ===== مطابقة كتابة الجملة: الاختصارات + علامات الترقيم ===== */
+// كل زوج: [الصيغة الكاملة, الاختصار]. المطابقة بتقبل الصيغتين في الاتجاهين.
+const CT = ("i am|i'm,you are|you're,he is|he's,she is|she's,it is|it's,we are|we're,they are|they're,that is|that's,what is|what's," +
+  "there is|there's,here is|here's,where is|where's,who is|who's,how is|how's,let us|let's,i have|i've,you have|you've,we have|we've," +
+  "they have|they've,he has|he's,she has|she's,it has|it's,could have|could've,would have|would've,should have|should've," +
+  "i will|i'll,you will|you'll,he will|he'll,she will|she'll,it will|it'll,we will|we'll,they will|they'll,that will|that'll,there will|there'll," +
+  "i would|i'd,you would|you'd,he would|he'd,she would|she'd,we would|we'd,they would|they'd,i had|i'd,you had|you'd,he had|he'd,she had|she'd,we had|we'd,they had|they'd," +
+  "do not|don't,does not|doesn't,did not|didn't,is not|isn't,are not|aren't,was not|wasn't,were not|weren't,have not|haven't,has not|hasn't," +
+  "had not|hadn't,will not|won't,would not|wouldn't,can not|can't,cannot|can't,could not|couldn't,should not|shouldn't,must not|mustn't")
+  .split(",").map((p) => p.split("|"));
+const EX = {};
+CT.forEach(([a, b]) => (EX[b] = EX[b] || []).push(a));
+// have / has / had بتتحول لاختصار بس لما تكون فعل مساعد (بعدها اسم مفعول)
+const HP = /^(\w+ed|\w+en|been|got|gone|done|lost|made|met|seen|become|begun|better)$/;
+const nx = (w) => (w || "").replace(/[^\w']/g, "");
+const aux = (e, n) => !/ (has|have|had)$/.test(e) || HP.test(n);
+const sp = (w) => w.match(/^(.*?)([,.;:!?]*)$/).slice(1);
+function variants(s) {
+  const T = s.split(" "), out = new Set();
+  (function go(i, acc) {
+    if (out.size > 300) return;
+    if (i >= T.length) return out.add(acc.join(" "));
+    const [w, p] = sp(T[i]);
+    go(i + 1, [...acc, T[i]]);
+    (EX[w] || []).forEach((e) => aux(e, nx(T[i + 1])) && go(i + 1, [...acc, e + p]));
+    if (!p && i + 1 < T.length) {
+      const [w2, p2] = sp(T[i + 1]);
+      CT.forEach(([a, b]) => a == w + " " + w2 && aux(a, nx(T[i + 2])) && go(i + 2, [...acc, b + p2]));
+    }
+  })(0, []);
+  return [...out];
+}
+const nw = (s) =>
+  s.toLowerCase().replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, " ").replace(/^ /, "");
+// الإجابات المقبولة: علامات الترقيم جوه الجملة لازم تتطابق، وعلامة آخر الجملة (. ? !) اختيارية
+function answers(t) {
+  const b = nw(t), m = b.match(/^(.*?)([.!?]+)$/), v = variants(m ? m[1] : b);
+  return m ? [...v, ...v.map((x) => x + m[2])] : v;
+}
 const I = () => DATA[st.topic + "-" + st.lv] || [],
   K = () => st.topic + "-" + st.lv;
 
@@ -104,6 +143,7 @@ function loadData(t, l) {
 let view = 0; // رقم العرض الحالي: بيمنع المؤقتات القديمة من تخريب الشاشة
 function render() {
   view++;
+  document.onkeydown = null; // اختصارات الكيبورد بتتحدد لكل شاشة
   S("st", st);
   if (st.topic && !TOPICS.find((x) => x.id == st.topic)) st.topic = null;
   st.sec = st.sec || "topics";
@@ -431,7 +471,9 @@ R.write = () => {
     kk = "w" + K();
   let k = Math.min(J(kk, 0), A.length - 1),
     sk = J(kk + "s", []),
-    lock = false;
+    lock = false,
+    hs = 0,
+    AN = [];
   M.innerHTML =
     '<div class="p" id="pg"></div><div class="bar"><i id="bi"></i></div><div class="c"><div class="ar" id="ar"></div><div class="en" id="en"></div><div class="b"><button class="ic" id="m">🎤</button><button class="ic g" id="sl">🐢</button></div><input id="in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="اكتب الجملة..."><div id="hint"></div><div id="msg"></div><div class="b"><button class="k" id="pv">⏮ السابق</button><button class="k" id="hn">💡 تلميح</button><button class="k" id="sk">تخطي ⏭</button><button class="k" id="bk"></button></div><div class="b"><input id="go" type="number" min="1" placeholder="رقم" style="width:80px"><button class="k" id="gb">اذهب</button><button class="k" id="rs">من البداية ↺</button><label><input type="checkbox" id="hd" style="width:auto"> إخفاء الجملة</label></div></div>';
   const show = () => {
@@ -447,6 +489,9 @@ R.write = () => {
     $("hint").textContent = "";
     $("msg").textContent = "";
     lock = false;
+    hs = 0;
+    AN = answers(A[k][0]);
+    if ($("hd").checked) say(A[k][0]); // وضع الإملاء: اسمع واكتب
     i.focus();
     S(kk, k);
     S(kk + "s", sk);
@@ -459,9 +504,8 @@ R.write = () => {
   };
   $("in").oninput = (e) => {
     if (lock) return;
-    const t = nm(A[k][0]),
-      v = nm(e.target.value);
-    if (v === t) {
+    const v = nw(e.target.value);
+    if (AN.includes(v.trim())) {
       lock = true;
       e.target.className = "ok";
       say(A[k][0]);
@@ -475,7 +519,7 @@ R.write = () => {
       setTimeout(() => {
         if (my === view) go(k + 1);
       }, 900);
-    } else e.target.className = t.startsWith(v) ? "" : "bad";
+    } else e.target.className = AN.some((x) => x.startsWith(v)) ? "" : "bad";
   };
   $("m").onclick = () => say(A[k][0]);
   $("sl").onclick = () => slow(A[k][0]);
@@ -494,10 +538,19 @@ R.write = () => {
   };
   $("rs").onclick = () => go(0);
   $("hn").onclick = () => {
-    $("hint").textContent = A[k][0]
-      .split(" ")
-      .map((w) => w[0] + "_".repeat(Math.max(0, w.length - 1)))
-      .join("  ");
+    // أول ضغطة: أول حرف من كل كلمة مع علامات الترقيم. تاني ضغطة: الجملة كاملة
+    $("hint").textContent = hs++
+      ? A[k][0]
+      : A[k][0]
+          .split(" ")
+          .map((w) => {
+            let f = 0;
+            return w.replace(/[A-Za-z0-9]/g, (c) => (f++ ? "_" : c));
+          })
+          .join("  ");
+  };
+  $("in").onkeydown = (e) => {
+    if (e.key == "Enter") $("hn").click(); // Enter = تلميح
   };
   $("hd").onchange = () => {
     $("en").style.filter = $("hd").checked ? "blur(8px)" : "";
@@ -511,7 +564,8 @@ R.quiz = () => {
     A = I(),
     Q = sh(A).slice(0, 40);
   let i = 0,
-    sc = 0;
+    sc = 0,
+    wr = [];
   const next = () => {
     if (i >= Q.length) {
       const bk = "qb-" + K();
@@ -523,6 +577,14 @@ R.quiz = () => {
         Q.length +
         '</div><div class="b"><button class="k m" id="rt">إعادة الاختبار</button></div></div>';
       $("rt").onclick = R.quiz;
+      if (wr.length) {
+        const h = document.createElement("h2");
+        h.className = "p";
+        h.style.fontSize = "18px";
+        h.textContent = "❌ مراجعة الأخطاء (" + wr.length + ")";
+        M.append(h);
+        wr.forEach((x) => M.append(mkRow(x[0], x[1])));
+      }
       return;
     }
     const q = Q[i],
@@ -535,9 +597,14 @@ R.quiz = () => {
       '</div><div class="c"><div class="ar">' +
       q[1] +
       '</div><div id="o"></div></div>';
-    opts.forEach((o) => {
+    document.onkeydown = (e) => {
+      const b = document.querySelectorAll(".opt")[+e.key - 1];
+      if (b && !b.disabled) b.click();
+    };
+    opts.forEach((o, n) => {
       const b = document.createElement("button");
       b.className = "opt";
+      b.dataset.n = n + 1;
       b.textContent = o[0];
       b.onclick = () => {
         document.querySelectorAll(".opt").forEach((x) => {
@@ -545,7 +612,10 @@ R.quiz = () => {
           if (x.textContent == q[0]) x.classList.add("ok");
         });
         if (o === q) sc++;
-        else b.classList.add("no");
+        else {
+          b.classList.add("no");
+          wr.push(q);
+        }
         say(q[0]);
         i++;
         setTimeout(() => {
