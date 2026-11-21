@@ -451,3 +451,39 @@ tr:first-child td {
   color: #b04e08;
   font-weight: 700;
 }
+
+/* إمكانية الوصول + رسالة التنبيه */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #b04e08;
+  outline-offset: 2px;
+}
+#toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1b2a38;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  max-width: 90%;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+#toast.on {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tc {
+    transition: none;
+  }
+  .tc:hover {
+    transform: none;
+  }
+}

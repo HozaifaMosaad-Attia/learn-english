@@ -2,6 +2,7 @@ const $ = (id) => document.getElementById(id),
   M = $("main"),
   R = {};
 const LV = ["A1", "A2", "B1", "B2"];
+const VER = "1"; // غيّر الرقم لما تحدّث ملفات المحتوى عشان المتصفح يجيب النسخة الجديدة
 const TABS = [
   ["read", "📖 قراءة واستماع"],
   ["write", "⌨️ كتابة"],
@@ -28,9 +29,12 @@ if (typeof TOPICS === "undefined") {
 let st = J("st", { topic: null, lv: "A1", tab: "read" });
 
 /* ===== النطق الأمريكي ===== */
+const TTS = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 let V = null,
-  tok = 0;
+  tok = 0,
+  cur = null;
 function pick() {
+  if (!TTS) return;
   const v = speechSynthesis.getVoices();
   V =
     v.find(
@@ -42,14 +46,29 @@ function pick() {
     null;
 }
 pick();
-speechSynthesis.onvoiceschanged = pick;
+if (TTS) speechSynthesis.onvoiceschanged = pick;
+function toast(t) {
+  let e = $("toast");
+  if (!e) {
+    e = document.createElement("div");
+    e.id = "toast";
+    e.setAttribute("role", "status");
+    document.body.append(e);
+  }
+  e.textContent = t;
+  e.className = "on";
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => (e.className = ""), 3500);
+}
 function seq(l, g, r) {
+  if (!TTS) return toast("المتصفح ده مش بيدعم النطق. جرّب Chrome أو Safari.");
   speechSynthesis.cancel();
   const m = ++tok;
   let i = 0;
   (function n() {
     if (m != tok || i >= l.length) return;
     const u = new SpeechSynthesisUtterance(l[i++]);
+    cur = u; // مرجع للـ utterance عشان Chrome مايمسحوش قبل ما يخلص
     u.lang = "en-US";
     if (V) u.voice = V;
     u.rate = r;
@@ -72,6 +91,7 @@ const sh = (a) => {
   }
   return a;
 };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
 const nm = (s) =>
   s
     .toLowerCase()
@@ -134,7 +154,7 @@ function loadData(t, l) {
   if (key in loaded) return loaded[key];
   return (loaded[key] = new Promise((res) => {
     const s = document.createElement("script");
-    s.src = "data/" + l.toLowerCase() + "/" + t + ".js";
+    s.src = "data/" + l.toLowerCase() + "/" + t + ".js?v=" + VER;
     s.onload = () => res(true);
     s.onerror = () => res(false);
     document.head.append(s);
@@ -143,6 +163,8 @@ function loadData(t, l) {
 let view = 0; // رقم العرض الحالي: بيمنع المؤقتات القديمة من تخريب الشاشة
 function render() {
   view++;
+  tok++; // بيوقف أي نطق شغال
+  if (TTS) speechSynthesis.cancel();
   document.onkeydown = null; // اختصارات الكيبورد بتتحدد لكل شاشة
   S("st", st);
   if (st.topic && !TOPICS.find((x) => x.id == st.topic)) st.topic = null;
@@ -257,7 +279,7 @@ function loadLessons(kind, l) {
   if (key in loaded) return loaded[key];
   return (loaded[key] = new Promise((res) => {
     const sc = document.createElement("script");
-    sc.src = "data/" + kind + "/" + l.toLowerCase() + ".js";
+    sc.src = "data/" + kind + "/" + l.toLowerCase() + ".js?v=" + VER;
     sc.onload = () => res(true);
     sc.onerror = () => res(false);
     document.head.append(sc);
@@ -285,8 +307,9 @@ function mkRow(en, ar) {
   const r = document.createElement("div");
   r.className = "r";
   r.innerHTML =
-    '<div class="t"><div class="en"></div><div class="ar"></div></div><button class="ic g">🐢</button><button class="ic">🎤</button>';
+    '<div class="t"><div class="en"></div><div class="ar"></div></div><button class="ic g" aria-label="نطق ببطء">🐢</button><button class="ic" aria-label="نطق">🎤</button>';
   r.querySelector(".en").textContent = en;
+  r.querySelector(".en").lang = "en";
   r.querySelector(".ar").textContent = ar;
   const b = r.querySelectorAll("button");
   b[0].onclick = () => slow(en);
@@ -376,13 +399,14 @@ function drawLesson(x, kind, lv) {
     sb.className = "ic";
     sb.textContent = "🎤";
     sb.title = "الصوت";
+    sb.setAttribute("aria-label", "الصوت");
     sb.onclick = () => seq([x.sample, x.sample], 700, Math.min(rate(), 0.8));
     B.querySelector("h3").append(" ", sb);
   }
   (x.words || []).forEach((w) => {
     const e = document.createElement("div");
     e.className = "wd";
-    e.innerHTML = '<b></b><button class="ic">🎤</button>';
+    e.innerHTML = '<b></b><button class="ic" aria-label="نطق">🎤</button>';
     e.querySelector("b").textContent = w;
     e.querySelector("button").onclick = () => say(w);
     $("wd").append(e);
@@ -454,8 +478,9 @@ R.read = () => {
     r.innerHTML =
       '<span class="n">' +
       (i + 1) +
-      '</span><div class="t"><div class="en"></div><div class="ar"></div></div><button class="ic g">🐢</button><button class="ic">🎤</button>';
+      '</span><div class="t"><div class="en"></div><div class="ar"></div></div><button class="ic g" aria-label="نطق ببطء">🐢</button><button class="ic" aria-label="نطق">🎤</button>';
     r.querySelector(".en").textContent = x[0];
+    r.querySelector(".en").lang = "en";
     r.querySelector(".ar").textContent = x[1];
     const b = r.querySelectorAll("button");
     b[0].onclick = () => slow(x[0]);
@@ -475,12 +500,13 @@ R.write = () => {
     hs = 0,
     AN = [];
   M.innerHTML =
-    '<div class="p" id="pg"></div><div class="bar"><i id="bi"></i></div><div class="c"><div class="ar" id="ar"></div><div class="en" id="en"></div><div class="b"><button class="ic" id="m">🎤</button><button class="ic g" id="sl">🐢</button></div><input id="in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="اكتب الجملة..."><div id="hint"></div><div id="msg"></div><div class="b"><button class="k" id="pv">⏮ السابق</button><button class="k" id="hn">💡 تلميح</button><button class="k" id="sk">تخطي ⏭</button><button class="k" id="bk"></button></div><div class="b"><input id="go" type="number" min="1" placeholder="رقم" style="width:80px"><button class="k" id="gb">اذهب</button><button class="k" id="rs">من البداية ↺</button><label><input type="checkbox" id="hd" style="width:auto"> إخفاء الجملة</label></div></div>';
+    '<div class="p" id="pg"></div><div class="bar"><i id="bi"></i></div><div class="c"><div class="ar" id="ar"></div><div class="en" id="en"></div><div class="b"><button class="ic" id="m" aria-label="نطق">🎤</button><button class="ic g" id="sl" aria-label="نطق ببطء">🐢</button></div><input id="in" autocomplete="off" autocapitalize="off" spellcheck="false" lang="en" aria-label="اكتب الجملة بالإنجليزي" placeholder="اكتب الجملة..."><div id="hint" aria-live="polite"></div><div id="msg" role="status"></div><div class="b"><button class="k" id="pv">⏮ السابق</button><button class="k" id="hn">💡 تلميح</button><button class="k" id="sk">تخطي ⏭</button><button class="k" id="bk"></button></div><div class="b"><input id="go" type="number" min="1" placeholder="رقم" aria-label="رقم الجملة" style="width:80px"><button class="k" id="gb">اذهب</button><button class="k" id="rs">من البداية ↺</button><label><input type="checkbox" id="hd" style="width:auto"> إخفاء الجملة</label></div></div>';
   const show = () => {
     $("pg").textContent = "الجملة " + (k + 1) + " من " + A.length;
     $("bi").style.width = (k / A.length) * 100 + "%";
     $("ar").textContent = A[k][1];
     $("en").textContent = A[k][0];
+    $("en").lang = "en";
     $("en").style.filter = $("hd").checked ? "blur(8px)" : "";
     $("bk").textContent = "↩ المتخطاة (" + sk.length + ")";
     const i = $("in");
@@ -606,6 +632,7 @@ R.quiz = () => {
       b.className = "opt";
       b.dataset.n = n + 1;
       b.textContent = o[0];
+      b.lang = "en";
       b.onclick = () => {
         document.querySelectorAll(".opt").forEach((x) => {
           x.disabled = true;
@@ -674,7 +701,7 @@ async function bad(t) {
 }
 R.tr = () => {
   M.innerHTML =
-    '<textarea id="ta" rows="4" placeholder="اكتب جملة بالعربي أو بالإنجليزي..."></textarea><div class="b"><button class="k m" id="tb">ترجم</button><button class="ic" id="ts" style="display:none">🎤</button></div><div id="res">النتيجة هتظهر هنا</div>';
+    '<textarea id="ta" rows="4" aria-label="النص المراد ترجمته" placeholder="اكتب جملة بالعربي أو بالإنجليزي..."></textarea><div class="b"><button class="k m" id="tb">ترجم</button><button class="ic" id="ts" aria-label="نطق" style="display:none">🎤</button></div><div id="res">النتيجة هتظهر هنا</div>';
   $("tb").onclick = async () => {
     const t = $("ta").value.trim(),
       Rs = $("res");
@@ -694,9 +721,9 @@ R.tr = () => {
             .map(
               (x) =>
                 '<b dir="ltr">' +
-                x[0] +
+                esc(x[0]) +
                 "</b>" +
-                (x[1] ? ' ← يمكن تقصد <b dir="ltr">' + x[1] + "</b>" : ""),
+                (x[1] ? ' ← يمكن تقصد <b dir="ltr">' + esc(x[1]) + "</b>" : ""),
             )
             .join("<br>");
         return;
