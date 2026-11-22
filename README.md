@@ -2,9 +2,17 @@
 
 [![Validate content](https://github.com/HozaifaMosaad-Attia/learn-english/actions/workflows/validate.yml/badge.svg)](https://github.com/HozaifaMosaad-Attia/learn-english/actions/workflows/validate.yml)
 
-An interactive, responsive English learning platform for **Arabic speakers**. Learners study real-life sentences, practice typing and listening, take quizzes, and work through grammar and pronunciation lessons across four CEFR levels (A1–B2). Built with **HTML5, CSS3, and vanilla JavaScript** — no frameworks and no build step.
+An interactive, responsive English learning platform for **Arabic speakers**. Learners study real-life sentences, practice typing and listening, take quizzes, and work through grammar and pronunciation lessons across four CEFR levels (A1–B2). Built with **HTML5, CSS3, and vanilla JavaScript** — no frameworks and no build step. The interface and explanations are in Arabic.
 
 🔗 **Live demo:** https://HozaifaMosaad-Attia.github.io/learn-english/
+
+<p align="center">
+  <a href="docs/home.png"><img src="docs/home.png" alt="Topics screen" width="260"></a>
+  <a href="docs/typing.png"><img src="docs/typing.png" alt="Typing practice screen" width="260"></a>
+  <a href="docs/quiz.png"><img src="docs/quiz.png" alt="Quiz screen" width="260"></a>
+</p>
+
+<p align="center"><sub>Topics · Typing practice · Quiz (click an image to enlarge)</sub></p>
 
 ---
 
